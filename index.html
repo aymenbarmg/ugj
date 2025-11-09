@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 منظمه CL - متجر الألعاب والمسابقات</title>
+
+<a href="https://t.me/uunxm" target="_blank" 
+   style="position:fixed; top:20px; right:20px; background:#0088cc; color:#fff; padding:8px 12px; border-radius:8px; text-decoration:none; z-index:1001;">
+📢 قناة تليجرام
+</a>
+
+<style>
+body {
+  font-family: "Cairo", sans-serif;
+  margin:0;
+  color:#fff;
+  text-align:center;
+  background: radial-gradient(circle at top, #1a1a2e, #0f0f1f);
+  background-image: url('https://images.unsplash.com/photo-1619983081408-dc7ab4e82c7b?auto=format&fit=crop&w=1400&q=80');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+}
+body::before {
+  content:''; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index:-1;
+}
+header { background:#111; color:#fff; padding:15px; font-size:22px; text-shadow: 0 0 10px #ff9800; }
+#adminPanelBtn { position: fixed; top: 15px; left: 15px; background: #222; color: #fff; border: none; width: 45px; height: 45px; border-radius: 8px; cursor: pointer; z-index: 1001; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: 0.3s; box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800 inset;}
+#adminPanelBtn:hover { background: #555; transform: scale(1.1);}
+#adminPanel { display: none; position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.9); border-radius: 15px; box-shadow: 0 0 15px #ff9800; padding: 15px; width: 280px; text-align: right; z-index: 1000; color:#fff;}
+input, button { margin: 5px 0; padding: 8px; width: 100%; border-radius: 8px; border: 1px solid #ccc; font-family: "Cairo";}
+#overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;}
+.wheel-container { margin:30px auto; width:300px; height:300px; border-radius:50%; border:8px solid #ff9800; position:relative; overflow:hidden; box-shadow: 0 0 20px #ff9800;}
+.wheel { width:100%; height:100%; border-radius:50%; transition:5s; }
+.pointer { width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-bottom:25px solid red; margin:10px auto; }
+#spinBtn { background: linear-gradient(145deg, #ff9800, #ffb74d); color:#fff; border:none; width:60px; height:60px; border-radius:10px; cursor:pointer; font-size:20px; display:inline-flex; align-items:center; justify-content:center; margin-top:10px; box-shadow:0 0 15px #ff9800, 0 0 25px #ffb74d inset;}
+#spinBtn:hover { background:#e68900; }
+.store { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; padding:20px;}
+.game-card { background: rgba(255,255,255,0.1); border-radius:15px; box-shadow:0 0 10px #ff9800; width:200px; overflow:hidden; transition:0.3s; position:relative; color:#fff;}
+.game-card:hover { transform:scale(1.05); box-shadow:0 0 20px #ff9800; }
+.game-card img { width:100%; height:150px; object-fit:cover; border-radius:8px; }
+.game-card h3, .game-card p { margin:5px; }
+.contact { background:#28a745; color:#fff; text-decoration:none; padding:5px 10px; border-radius:8px; display:inline-block; margin-bottom:10px;}
+#winnerBox { background:#d4edda; color:#155724; padding:10px; margin:15px; border-radius:10px; font-size:18px; display:none;}
+#customText { margin-top:15px; font-size:18px; color:#ffeb3b; min-height:24px; text-shadow: 0 0 8px #ff9800;}
+</style>
+</head>
+<body>
+
+<header>🎮 منظمه CL - متجر الألعاب والمسابقات</header>
+<button id="adminPanelBtn">⚙️</button>
+<div id="overlay"></div>
+
+<div id="adminPanel">
+<h3>لوحة التحكم</h3>
+<div id="loginSection">
+  <input type="password" id="adminPass" placeholder="كلمة المرور">
+  <button onclick="login()">دخول</button>
+</div>
+<div id="controlSection" style="display:none;">
+  <h4>🎯 إضافة لاعب</h4>
+  <input type="text" id="playerName" placeholder="اسم اللاعب">
+  <button onclick="addPlayer()">➕ إضافة</button>
+  <button onclick="deletePlayer()">🗑️ حذف لاعب</button>
+  <h4>🕹️ إضافة لعبة</h4>
+  <input type="file" id="gameImage">
+  <input type="text" id="gameName" placeholder="اسم اللعبة">
+  <input type="number" id="gamePrice" placeholder="السعر">
+  <input type="text" id="contactLink" placeholder="رابط التواصل (تليجرام)">
+  <button onclick="addGame()">💾 إضافة اللعبة</button>
+  <button onclick="deleteGame()">🗑️ حذف لعبة</button>
+  <h4>✏️ نص مخصص تحت العجلة</h4>
+  <input type="text" id="customInput" placeholder="اكتب نص هنا">
+  <button onclick="updateCustomText()">💬 عرض النص</button>
+  <button style="background:#6c757d;color:#fff;" onclick="logout()">🚪 تسجيل خروج</button>
+</div>
+</div>
+
+<h2>🎯 عجلة التدوير</h2>
+<div id="winnerBox"></div>
+<div class="pointer"></div>
+<div class="wheel-container">
+  <canvas id="wheelCanvas" width="300" height="300"></canvas>
+</div>
+<button id="spinBtn" onclick="askPassword()">🎡</button>
+<div id="customText"></div>
+
+<h2>🕹️ ألعاب للبيع</h2>
+<div class="store" id="store"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ---------- لوحة التحكم ----------
+let adminOpen=false;
+const overlay=document.getElementById("overlay");
+const panel=document.getElementById("adminPanel");
+document.getElementById("adminPanelBtn").onclick=()=>{ adminOpen=!adminOpen; panel.style.display=adminOpen?"block":"none"; overlay.style.display=adminOpen?"block":"none";};
+function login(){ if(document.getElementById("adminPass").value==="2012"){ document.getElementById("loginSection").style.display="none"; document.getElementById("controlSection").style.display="block";} else alert("❌ كلمة المرور غير صحيحة"); }
+function logout(){ document.getElementById("loginSection").style.display="block"; document.getElementById("controlSection").style.display="none"; document.getElementById("adminPass").value="";}
+
+// ---------- البيانات ----------
+let players = [];
+let games = [];
+let winnerData = null;
+
+// تحديث النص المخصص
+function updateCustomText(){
+  const text = document.getElementById("customInput").value.trim();
+  db.ref('customText').set(text);
+  document.getElementById("customInput").value = "";
+}
+
+// ---------- مزامنة البيانات مع Firebase ----------
+db.ref('players').on('value', snapshot => { players = snapshot.val() || []; drawWheel(); });
+db.ref('games').on('value', snapshot => { games = snapshot.val() || []; showGames(); });
+db.ref('customText').on('value', snapshot => { document.getElementById("customText").innerText = snapshot.val() || ""; });
+db.ref('winner').on('value', snapshot => { winnerData = snapshot.val(); showWinner(); });
+
+// ---------- الوظائف ----------
+function addPlayer(){ const name=document.getElementById("playerName").value.trim(); if(name){ players.push(name); db.ref('players').set(players); document.getElementById("playerName").value=""; } }
+function deletePlayer(){ const name=prompt("اكتب اسم اللاعب الذي تريد حذفه:"); if(name){ players = players.filter(p=>p!==name); db.ref('players').set(players); } }
+function addGame(){
+  const name=document.getElementById("gameName").value.trim();
+  const price=document.getElementById("gamePrice").value;
+  const contact=document.getElementById("contactLink").value.trim();
+  const file=document.getElementById("gameImage").files[0];
+  if(name && price && contact && file){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      games.push({name,price,contact,image:e.target.result});
+      db.ref('games').set(games);
+      document.getElementById("gameName").value="";
+      document.getElementById("gamePrice").value="";
+      document.getElementById("contactLink").value="";
+      document.getElementById("gameImage").value="";
+    };
+    reader.readAsDataURL(file);
+  }
+}
+function deleteGame(){ const name=prompt("اكتب اسم اللعبة التي تريد حذفها:"); if(name){ games = games.filter(g=>g.name!==name); db.ref('games').set(games); } }
+function showGames(){ const container=document.getElementById("store"); container.innerHTML=""; games.forEach(g=>{ const card=document.createElement("div"); card.className="game-card"; card.innerHTML=`<img src="${g.image}"><h3>${g.name}</h3><p>${g.price} 💵</p><a href="${g.contact}" target="_blank" class="contact">تواصل</a>`; container.appendChild(card); }); }
+
+function drawWheel(){
+  const canvas=document.getElementById("wheelCanvas");
+  const ctx=canvas.getContext("2d");
+  const num=players.length;
+  ctx.clearRect(0,0,300,300);
+  if(num===0)return;
+  const step=2*Math.PI/num;
+  for(let i=0;i<num;i++){
+    ctx.beginPath();
+    ctx.moveTo(150,150);
+    ctx.fillStyle=i%2?"#03a9f4":"#ffc107";
+    ctx.arc(150,150,150,i*step,(i+1)*step);
+    ctx.fill();
+    ctx.save();
+    ctx.translate(150,150);
+    ctx.rotate(i*step+step/2);
+    ctx.fillStyle="#000";
+    ctx.font="bold 14px Cairo";
+    ctx.fillText(players[i],60,5);
+    ctx.restore();
+  }
+}
+
+function showWinner(){
+  const box=document.getElementById("winnerBox");
+  if(winnerData && Date.now()<winnerData.expiry){
+    box.style.display="block";
+    box.innerText="🏆 الفائز: "+winnerData.name;
+  } else { box.style.display="none"; }
+}
+
+function askPassword(){ const pass=prompt("🔐 أدخل كلمة المرور لتدوير العجلة:"); if(pass==="2012") spin(); else alert("❌ كلمة المرور غير صحيحة"); }
+
+function spin(){
+  if(players.length===0){alert("لا يوجد متسابقون!");return;}
+  const deg=Math.floor(5000+Math.random()*5000);
+  const wheel=document.getElementById("wheelCanvas");
+  wheel.style.transition="5s";
+  wheel.style.transform=`rotate(${deg}deg)`;
+  setTimeout(()=>{
+    wheel.style.transition="none";
+    const finalDeg=deg%360;
+    const index=Math.floor((players.length - (finalDeg/360*players.length))%players.length);
+    const winner=players[index];
+    const expiry=Date.now()+3*60*60*1000;
+    winnerData={name:winner,expiry};
+    db.ref('winner').set(winnerData);
+  },5000);
+}
+</script>
+</body>
+</html>
